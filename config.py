@@ -1,12 +1,13 @@
 class Config:
-    ZHIPUAI_API_KEY: str = "your zhipuai api key"
-    ZHIPUAI_MODEL: str = "your zhipuai model"
+    ollama_embedding_model: str = "embeddinggemma:latest"
+    ollama_embedding_url: str = "http://127.0.0.1:11434"
 
-    OPENAI_API_BASE: str = "your openai api base"
-    OPENAI_API_KEY: str = "your openai api key"
-    OPENAI_MODEL_NAME: str = "your openai model"
-    TEMPERATURE: float = 0.8
+    model_name: str = "your model name"
+    base_url: str = "your base url"
+    api_key: str = "your api key"
 
-    TOP_K: int = 3
+    temperature: float = 0.8
 
-    PERSISTENT_PATH: str = "./memory"
+    top_k: int = 3
+
+    persistent_path: str = "./memory"

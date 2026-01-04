@@ -1,6 +1,8 @@
+chromadb==1.4.0
 langchain==0.3.18
 langchain-core==0.3.72
 langchain-openai==0.3.28
 langchain-community==0.3.17
+langchain_ollama==0.6.1
 pydantic==2.10.6
 streamlit==1.45.1

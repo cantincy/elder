@@ -1,7 +1,6 @@
-from langchain_community.embeddings import ZhipuAIEmbeddings
 from langchain_community.vectorstores import Chroma
-from langchain_core.messages import HumanMessage
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_ollama import OllamaEmbeddings
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph
 
@@ -12,44 +11,37 @@ from state import AgentState
 
 class Agent:
     def __init__(self):
-        self.embedding_function = ZhipuAIEmbeddings(
-            model=Config.ZHIPUAI_MODEL,
-            api_key=Config.ZHIPUAI_API_KEY
+        self.embedding_function = OllamaEmbeddings(
+            model=Config.ollama_embedding_model,
+            base_url=Config.ollama_embedding_url
         )
 
         self.vector_store = Chroma(
             embedding_function=self.embedding_function,
-            persist_directory=Config.PERSISTENT_PATH
+            persist_directory=Config.persistent_path
         )
 
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", SYSTEM_PROMPT),
-                ("human", "{input}"),
-            ]
-        )
-
-        self.model = prompt | ChatOpenAI(
-            model_name=Config.OPENAI_MODEL_NAME,
-            openai_api_key=Config.OPENAI_API_KEY,
-            openai_api_base=Config.OPENAI_API_BASE,
-            temperature=Config.TEMPERATURE
+        self.model = ChatOpenAI(
+            model=Config.model_name,
+            api_key=Config.api_key,
+            base_url=Config.base_url,
+            temperature=Config.temperature
         )
 
         def retrieve_memory(state: AgentState):
             original_input = state.get("original_input", "")
 
-            docs = self.vector_store.similarity_search(original_input, k=Config.TOP_K)
+            docs = self.vector_store.similarity_search(original_input, k=Config.top_k)
 
             memory = [doc.page_content.strip() for doc in docs]
 
             memory_str = "\n".join(memory)
 
             final_input = f"""
-                用户的问题是：
+                用户的问题：
                 {original_input}
                 
-                历史对话记录是：
+                历史对话记录：
                 {memory_str}
                 
                 你可以参考历史对话记录来回答用户的问题。如果你认为历史对话记录与问题不相关，则忽略历史对话记录，基于自己的知识来回答问题。
@@ -62,11 +54,11 @@ class Agent:
             }
 
         def call_model(state: AgentState):
-            messages = state["messages"]
+            system_message = SystemMessage(content=SYSTEM_PROMPT)
 
-            input_content = messages[-1].content
+            messages = [system_message] + state["messages"]
 
-            response = self.model.invoke({"input": input_content})
+            response = self.model.invoke(messages)
 
             return {"messages": [response]}
 
@@ -77,11 +69,13 @@ class Agent:
             response = messages[-1].content
 
             chat_history = f"""
+                历史问题：
                 ```
-                之前的问题：
                 {original_input}
+                ```
                 
-                之前的回答：
+                历史回答：
+                ```
                 {response}
                 ```
             """
@@ -106,8 +100,7 @@ class Agent:
     def invoke(self, query: str):
         try:
             result = self.app.invoke({
-                "original_input": query,
-                "messages": []
+                "original_input": query
             })
             if result["messages"] and len(result["messages"]) > 0:
                 return result["messages"][-1].content
