@@ -18,7 +18,7 @@ This project is a Streamlit-based chatbot named "暖心伙伴" (Warm Companion),
 - **LangGraph**: Workflow orchestration for agent state management
 - **Chroma**: Vector database for persistent memory storage
 - **Ollama**: Local embedding model (embeddinggemma:latest)
-- **OpenAI API**: Primary language model (GLM-4-9B via SiliconFlow)
+- **OpenAI API**: Primary language model
 
 ### Workflow
 The agent follows a three-step LangGraph workflow:
@@ -43,7 +43,7 @@ elder/
 
 ### Model Settings
 - **Embedding Model**: Ollama `embeddinggemma:latest` (local)
-- **Language Model**: THUDM/GLM-4-9B-0414 (via SiliconFlow API)
+- **Language Model**: the llm you want to use
 - **Temperature**: 0.8 (balanced creativity)
 - **Top-K Retrieval**: 3 most relevant memories
 
@@ -56,7 +56,7 @@ elder/
 ### Prerequisites
 - Python 3.8+
 - Ollama running locally with `embeddinggemma:latest` model
-- Valid SiliconFlow API key
+- Valid LLM API key
 
 ### Installation
 
@@ -77,8 +77,8 @@ ollama pull embeddinggemma:latest
 
 4. Update `config.py` with your API configuration:
 ```python
-api_key: str = "your-siliconflow-api-key"
-base_url: str = "https://api.siliconflow.cn/v1"
+api_key: str = "your llm api key"
+base_url: str = "your llm api base url"
 ```
 
 5. Run the application:
